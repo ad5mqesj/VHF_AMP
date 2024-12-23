@@ -26,7 +26,7 @@ void setup()
 {
     //initialize the display library with the numbers of the interface pins
     LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
-    Serial.begin(9600);
+    Serial.begin(115200);
     analogReference(INTERNAL);
 
     lcd.begin(20, 4);
@@ -44,6 +44,7 @@ void setup()
 
     lcd.setCursor(0, 0);
     lcd.print("500W 2m Amplifier");
+    delay(3000);
 #ifdef DIAGPRINT  
     Serial.println("Exiting setup."); 
 #endif
@@ -68,41 +69,61 @@ void loop() {
     rawRef = analogRead(irefl);
     Rave += rawRef;
   }
+
+  lcd.setCursor(0, 0);
   //compute averages and scale to Engineering units
   Tave = Tave / (float)SAMPLES;
   rawVoltage = Tave*INTERNAL / 1023.0;
   Temp = rawVoltage * 100.0;
 #ifdef DIAGPRINT  
+  Serial.print("Temp=");
   Serial.println(Temp,3);
 #endif
-
+    lcd.print("T=");
+    lcd.print(Temp,3);
+    lcd.print("   ");
   Iave = Iave / (float)SAMPLES;
   rawVoltage = Iave*INTERNAL / 1023.0;
   Idd = (rawVoltage - 2.5)/12.5;    //nom 25A at 4.5v out, 0 at 2.5 v out; voltages between 0.5 and 2.5 indicate reverse polarity
 #ifdef DIAGPRINT  
+  Serial.print("Idd=");
   Serial.println(Idd,3);
 #endif
+    lcd.print("I=");
+    lcd.print(Idd,3);
+    lcd.print("   ");
 
   Vave = Vave / (float)SAMPLES;
   rawVoltage = Vave*INTERNAL / 1023.0;
   Vdd = rawVoltage*1.0E5/5100.0 + rawVoltage;    //adjust to scale 
 #ifdef DIAGPRINT  
+  Serial.print("Vdd=");
   Serial.println(Vdd,3);
 #endif
+   lcd.print("V=");
+   lcd.println(Vdd,3);
 
   Fave = Fave / (float)SAMPLES;
   rawVoltage = Fave*INTERNAL / 1023.0;
   Fwd = rawVoltage;    //adjust to scale 
 #ifdef DIAGPRINT  
+  Serial.print("vFwd=");
   Serial.println(Fwd,3);
 #endif
+    lcd.print("P Out= ");
+    lcd.print(vFwd,3);
+    lcd.print("   ");
 
   Rave = Rave / (float)SAMPLES;
   rawVoltage = Rave*INTERNAL / 1023.0;
   Ref = rawVoltage;    //adjust to scale 
 #ifdef DIAGPRINT  
+  Serial.print("vRef=");
   Serial.println(Ref,3);
 #endif
+    lcd.print("P Refl= ");
+    lcd.print(vRef,3);
+    lcd.print("   ");
 
     float num = Fwd + Ref;
     float denom = Fwd - Ref;
@@ -111,7 +132,13 @@ void loop() {
     else  
       Swr = num / denom;
 #ifdef DIAGPRINT  
+  Serial.print("Swr=");
   Serial.println(Swr,3);
 #endif
 
+#ifdef DIAGPRINT  
+  //wait for key press
+  Serial.println ("Press any key");
+  while (!Serial.available());
+  #endif
 }

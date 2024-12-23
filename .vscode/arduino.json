@@ -1,4 +1,5 @@
 {
     "board": "arduino:avr:uno",
-    "sketch": "VHF_AMP.ino"
+    "sketch": "VHF_AMP.ino",
+    "port": "COM7"
 }

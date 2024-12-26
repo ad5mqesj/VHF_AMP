@@ -1,4 +1,4 @@
-# Control firmware for 500W MRF300 based 2m amplifier 
+# Control firmware for 500W MRF300 based 2m amplifier
 
 Monitors forward/reverse power, Main bus DC voltage and current, transistor case temperature.  
 Controls T/R relays, fans (PWM).  

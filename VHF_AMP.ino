@@ -160,40 +160,60 @@ void getSensors(){
 }//getSensors()
 
 void handleDiaplay(){
+  char temps[50];
+  //temp, Idd, Vdd
+  lcd.setCursor(0, 0);
+  lcd.print("                    "); //erase line
   lcd.setCursor(0, 0);
   lcd.print("T=");
-  lcd.print(Temp,3);
+  dtostrf(Temp, 4,1,temps);
+  lcd.print(temps);
   lcd.print(" ");
   lcd.print("I=");
-  lcd.print(Idd,3);
+  dtostrf(Idd, 4,1,temps);
+  lcd.print(temps);
   lcd.print(" ");
   lcd.print("V=");
-  lcd.println(Vdd,3);
+  dtostrf(Vdd, 4,1,temps);
+  lcd.print(temps);
 
-  lcd.setCursor(1, 0);
-  lcd.print("P Out= ");
-  lcd.print(FwdMax,3);
+  //power
+  lcd.setCursor(0, 1);
+  lcd.print("                    "); //erase line
+  lcd.setCursor(0, 1); //go back to start
+  lcd.print("F= ");
+  dtostrf(FwdMax, 5,1,temps);
+  lcd.print(temps);
   if (Transmit)
   {
-    lcd.print("   ");
-    lcd.print("P Refl= ");
-    lcd.print(Ref,3);
-    lcd.print("   ");
+    lcd.print("  ");
+    lcd.print("R= ");
+    dtostrf(Ref, 4,1,temps);
+    lcd.print(temps);
   }
-  lcd.setCursor(2, 0);
+  //tr status and swr
+  lcd.setCursor(0, 2);
+  lcd.print("                    "); //erase line
+  lcd.setCursor(0, 2);
   if (Transmit)
   {
     lcd.print("Transmit");
     lcd.print("    ");
     lcd.print("SWR  ");
-    lcd.print(Swr,3);
+    dtostrf(Swr, 3,1,temps);
+    lcd.print(temps);
     lcd.print(":1");
   }
   else
   {
-    lcd.println("                    "); //erase line
+    lcd.print("Receive"); //erase line
   }
-  lcd.setCursor(2, 0);
+
+
+  //fault indicators
+  lcd.setCursor(0, 3);
+  lcd.print("                    "); //erase line
+  lcd.setCursor(0, 3);
   if (tempFault)
   {
     lcd.print("OVERTEMP  ");
@@ -204,8 +224,9 @@ void handleDiaplay(){
   }
   else if (!tempFault) //since its else applied to swr fault it actually tests both faults
   {
-    lcd.println("                    "); //erase line
+    lcd.print("                    "); //erase line
   }
+  
 }//handleDiaplay()
 
 void handleFaults(){
@@ -216,8 +237,8 @@ void handleFaults(){
     }
   Transmit = false;
   //drop keyout first -hopefully input then ceases
-  setKeyOut();
-  setTRrelays();
+  setKeyOut(); //drop keyout and turn off bias
+  setTRrelays(); //switch relays
   setFault(true);
 }//handleFaults()
 
@@ -231,8 +252,8 @@ void handleKeyIn(){
     {
       Transmit = false;
     }
+  setTRrelays();  //relays first, wait settle time then turn on bias and set keyout
   setKeyOut();
-  setTRrelays();
 }//handleKeyIn
 
 void setTRrelays(){
@@ -245,17 +266,27 @@ void setTRrelays(){
 
 void setKeyOut(){
   if (Transmit)
+  {
+    digitalWrite (pBiasOff, 0);   //bias on
     digitalWrite (pKeyOut, 0);  //active low
+  }
   else
+    {
     digitalWrite (pKeyOut, 1);  //active low
+    }
   delay(50);  //wait for tranmistter to stop
 }//setKeyOut
 
 void setFault(bool fault){
   if (fault)
+    {
+    digitalWrite (pBiasOff, 1);   //bias off
     digitalWrite (pFault, 0);     //(Active LOW)
+    }
   else
+  {
     digitalWrite (pFault, 1);     //No Fault
+  }
 }//setFault
 
 void fanControl(){
@@ -333,7 +364,7 @@ void checkSerial()
 }//checkSerial
 
 void processCommand(){
-#ifdef DEBUG
+#ifdef DIAGPRINT
   Serial.print("process command : ");
   Serial.println((char)control_port_buffer[0]);
 #endif
@@ -343,6 +374,9 @@ void processCommand(){
     case 't':
       if (!tempFault && !swrFault) //ignore if faulted
         {
+#ifdef DIAGPRINT
+  Serial.println("Changing State to transmit");
+#endif
           Transmit = true;
           setKeyOut();
           setTRrelays();
@@ -351,9 +385,21 @@ void processCommand(){
 
     case 'R':
     case 'r':
-      Transmit = true;
+#ifdef DIAGPRINT
+  Serial.println("Changing State to receive");
+#endif
+      Transmit = false;
       setKeyOut();
       setTRrelays();
+      break;
+
+    case 'C':
+    case 'c':
+#ifdef DIAGPRINT
+  Serial.println("Clear faults");
+#endif
+      Transmit = false;
+      setFault(false);
       break;
 
     default:

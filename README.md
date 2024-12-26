@@ -8,6 +8,7 @@ On High (> 3.0) SWR or case Transistor case temp (> 65 C) signals fault, drops K
 ## Serial commands
 
 Default serial parameters 115.2 kBaud, 8n1
-    1. T/t to switch relays to transmit.
-    2. R/r to switch relays to recieve.
-    3. C/c to clear faults.  
+
+- T/t to switch relays to transmit.
+- R/r to switch relays to recieve.
+- C/c to clear faults.  

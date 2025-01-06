@@ -49,6 +49,12 @@ void setup()
     pinMode (pKeyOut, OUTPUT);
     pinMode (pFault, OUTPUT);
     
+    pinMode (itemp, INPUT);
+    pinMode (iIdd, INPUT);
+    pinMode (iVdd, INPUT);
+    pinMode (ifwd, INPUT);
+    pinMode (irefl, INPUT);
+
     digitalWrite (pTRrelay, 0);   //relay NO - bypass
     analogWrite  (pFans, 0);      //fan off
     digitalWrite (pBiasOff, 0);   //bias on
@@ -93,6 +99,7 @@ void getSensors(){
     rawRef = analogRead(irefl);
     Rave += rawRef;
   }
+  
   //compute averages and scale to Engineering units
   Tave = Tave / (float)SAMPLES;
   rawVoltage = Tave*INTERNAL / 1023.0;
